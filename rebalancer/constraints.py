@@ -6,13 +6,15 @@ All constraints are affine in w — this is required for the overall
 optimisation problem to remain convex (DCP-compliant).
 """
 
+from typing import Optional
+
 import cvxpy as cp
 import numpy as np
 
 
 def build_constraints(
     w: cp.Variable,
-    w_prev: np.ndarray | None,
+    w_prev: Optional[np.ndarray],
     config: dict,
 ) -> list[cp.Constraint]:
     """
