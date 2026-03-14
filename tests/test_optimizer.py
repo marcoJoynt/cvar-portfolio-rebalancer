@@ -2,6 +2,9 @@
 """Optimizer tests using synthetic data so they run without network."""
 import numpy as np
 import pandas as pd
+import pytest
+from rebalancer.config import OptimizerConfig
+from rebalancer.exceptions import InfeasibleConfigError
 from rebalancer.scenarios import historical_bootstrap
 from rebalancer.optimizer import optimise
 
@@ -71,3 +74,28 @@ def test_layer3_cost_penalty_reduces_turnover():
 
     assert result3["cvar"] <= config_with_cost["cvar_limit"] + 1e-4
     assert result3["turnover"] < result2["turnover"]
+
+
+def test_optimise_accepts_OptimizerConfig():
+    """optimise() accepts OptimizerConfig and uses it like a dict."""
+    scenarios = _synthetic_scenarios()
+    w_target = np.array([0.40, 0.20, 0.25, 0.10, 0.05])
+    w_prev = np.ones(5) / 5
+    config = OptimizerConfig(
+        min_weight=0.05,
+        max_weight=0.60,
+        cvar_limit=0.05,
+        cvar_beta=0.95,
+    )
+    result = optimise(w_prev, w_target, scenarios, config)
+    assert result["status"] in ("optimal", "optimal_inaccurate")
+    assert result["cvar"] <= 0.05 + 1e-4
+
+
+def test_invalid_cvar_limit_raises():
+    """Passing cvar_limit <= 0 raises InfeasibleConfigError."""
+    scenarios = _synthetic_scenarios()
+    w_prev = np.ones(5) / 5
+    w_target = np.array([0.40, 0.20, 0.25, 0.10, 0.05])
+    with pytest.raises(InfeasibleConfigError, match="cvar_limit"):
+        optimise(w_prev, w_target, scenarios, {"cvar_limit": 0.0, "min_weight": 0.05, "max_weight": 0.6})

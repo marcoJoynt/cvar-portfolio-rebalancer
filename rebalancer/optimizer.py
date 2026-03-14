@@ -16,10 +16,14 @@ Built in three layers — each is a valid standalone problem:
     3. + transaction cost penalty   (execution-aware)
 """
 
+from typing import Union
+
 import cvxpy as cp
 import numpy as np
 
+from .config import OptimizerConfig
 from .constraints import build_constraints
+from .exceptions import InfeasibleConfigError, OptimizationError
 from ._logging import get_logger
 from .risk import cvar_expression, compute_cvar
 
@@ -30,7 +34,7 @@ def optimise(
     w_prev: np.ndarray,
     w_target: np.ndarray,
     scenarios: np.ndarray,
-    config: dict,
+    config: Union[dict, OptimizerConfig],
 ) -> dict:
     """
     Parameters
@@ -41,12 +45,8 @@ def optimise(
         Target (benchmark) weights, shape (n_assets,).
     scenarios : np.ndarray
         Return scenarios, shape (n_scenarios, n_assets).
-    config : dict
-        Supported keys (in addition to constraints.py keys):
-            cvar_limit      : float, optional  — CVaR upper bound
-            cvar_beta       : float, default 0.95
-            lambda_cost     : float, default 0.0  — transaction cost penalty
-            cost_per_unit   : float, default 0.001 — cost per unit turnover
+    config : dict or OptimizerConfig
+        Optimiser and constraint settings. Use OptimizerConfig.from_dict(d) to build from a dict.
 
     Returns
     -------
@@ -58,7 +58,16 @@ def optimise(
         turnover        : float       — L1 turnover vs w_prev
         status          : str         — solver status
     """
-    w_prev   = np.asarray(w_prev).ravel()
+    if isinstance(config, OptimizerConfig):
+        config = config.to_dict()
+    else:
+        # Validate so we fail fast when passing a raw dict
+        if config.get("cvar_limit") is not None and config["cvar_limit"] <= 0:
+            raise InfeasibleConfigError("cvar_limit must be > 0")
+        if not (0 < config.get("cvar_beta", 0.95) < 1):
+            raise InfeasibleConfigError("cvar_beta must be in (0, 1)")
+
+    w_prev = np.asarray(w_prev).ravel()
     w_target = np.asarray(w_target).ravel()
     n = len(w_target)
 
@@ -104,7 +113,7 @@ def optimise(
     logger.debug("Solver finished: status=%s", prob.status)
 
     if prob.status not in ("optimal", "optimal_inaccurate"):
-        raise RuntimeError(f"Optimiser failed: {prob.status}")
+        raise OptimizationError(f"Optimiser failed: {prob.status}")
 
     w_opt = w.value
 
