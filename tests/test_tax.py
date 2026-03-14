@@ -39,7 +39,6 @@ def test_tax_penalty_only_on_gains():
                           portfolio_value=10_000, tax_rate=0.25, allowance=0)
 
     assert penalty > 0, "Should have a tax cost on the gain"
-    print(f"Tax penalty: {penalty:.4f} ({penalty*100:.2f}% of portfolio)")
 
 
 def test_tax_penalty_german_allowance():

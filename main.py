@@ -4,8 +4,15 @@ Demo: rebalance a drifted 5-ETF portfolio toward target allocation.
 Run with: python main.py
 """
 
+import logging
+import os
 import numpy as np
+
+from rebalancer._logging import configure_logging
 from rebalancer.rebalancer import Portfolio, rebalance
+
+# VERBOSE=1 to see DEBUG lines (e.g. "Fetched prices for ...", "Solver finished: ...")
+configure_logging(level=logging.DEBUG if os.environ.get("VERBOSE") == "1" else logging.INFO)
 
 # ---------------------------------------------------------------------------
 # Client portfolio — drifted after a equity rally

@@ -9,6 +9,10 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
+from ._logging import get_logger
+
+logger = get_logger(__name__)
+
 # Default portfolio: US stocks, ex-US stocks, bonds, gold, real estate.
 DEFAULT_TICKERS = ["VTI", "VXUS", "BND", "GLD", "VNQ"]
 
@@ -37,8 +41,10 @@ def get_prices(
     prices = prices.dropna()
 
     if prices.empty:
+        logger.warning("No price data returned for %s", tickers)
         raise ValueError(f"No price data returned for: {tickers}")
 
+    logger.debug("Fetched prices for %s: %d days", tickers, len(prices))
     return prices
 
 

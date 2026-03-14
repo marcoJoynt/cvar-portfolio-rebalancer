@@ -10,5 +10,3 @@ def test_bootstrap_shape_and_no_nans():
     scenarios = historical_bootstrap(returns, n_scenarios=5000)
     assert scenarios.shape == (5000, len(prices.columns))
     assert not np.isnan(scenarios).any()
-    print(f"  → scenarios.shape = {scenarios.shape}, no NaNs")
-    print(f"  → mean daily return per asset: {scenarios.mean(axis=0).round(4).tolist()}")
