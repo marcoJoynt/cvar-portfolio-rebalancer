@@ -20,7 +20,10 @@ import cvxpy as cp
 import numpy as np
 
 from .constraints import build_constraints
+from ._logging import get_logger
 from .risk import cvar_expression, compute_cvar
+
+logger = get_logger(__name__)
 
 
 def optimise(
@@ -97,6 +100,8 @@ def optimise(
     # ------------------------------------------------------------------
     prob = cp.Problem(objective, constraints)
     prob.solve(solver=cp.ECOS, warm_start=True)
+
+    logger.debug("Solver finished: status=%s", prob.status)
 
     if prob.status not in ("optimal", "optimal_inaccurate"):
         raise RuntimeError(f"Optimiser failed: {prob.status}")

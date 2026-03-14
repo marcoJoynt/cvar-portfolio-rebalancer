@@ -26,9 +26,6 @@ def test_compute_cvar_cvar_geq_var(scenarios_and_weights):
     scenarios, w_equal, w_concentrated = scenarios_and_weights
     eq = compute_cvar(w_equal, scenarios, beta=0.95)
     co = compute_cvar(w_concentrated, scenarios, beta=0.95)
-    print("  Equal weight CVaR(95%):     ", round(eq["cvar"], 4))
-    print("  Concentrated CVaR(95%):     ", round(co["cvar"], 4))
-    print("  Equal weight VaR(95%):      ", round(eq["var"], 4))
     assert eq["cvar"] >= eq["var"], "CVaR must be >= VaR"
     assert co["cvar"] >= co["var"], "CVaR must be >= VaR"
 
