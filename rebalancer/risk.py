@@ -22,11 +22,13 @@ a metric computed after the fact. That's the core insight.
 import cvxpy as cp
 import numpy as np
 
+from .constants import DEFAULT_CVAR_BETA
+
 
 def cvar_expression(
     w: cp.Variable,
     scenarios: np.ndarray,
-    beta: float = 0.95,
+    beta: float = DEFAULT_CVAR_BETA,
 ) -> tuple[cp.Expression, cp.Variable]:
     """
     Build the CVaR expression and its auxiliary VaR variable.
@@ -78,7 +80,7 @@ def cvar_expression(
 def compute_cvar(
     weights: np.ndarray,
     scenarios: np.ndarray,
-    beta: float = 0.95,
+    beta: float = DEFAULT_CVAR_BETA,
 ) -> dict:
     """
     Compute CVaR and VaR for a *fixed* weight vector.

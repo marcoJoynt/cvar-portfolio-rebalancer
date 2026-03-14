@@ -6,11 +6,13 @@ Used as input to the CVaR optimizer (no distributional assumption needed).
 import numpy as np
 import pandas as pd
 
+from .constants import TRADING_DAYS_PER_YEAR
+
 
 def historical_bootstrap(
     returns: pd.DataFrame,
     n_scenarios: int = 10_000,
-    window: int = 252,
+    window: int = TRADING_DAYS_PER_YEAR,
 ) -> np.ndarray:
     """
     Sample rows from the last `window` trading days of returns, with replacement.
