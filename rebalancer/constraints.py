@@ -11,6 +11,8 @@ from typing import Optional
 import cvxpy as cp
 import numpy as np
 
+from .exceptions import InfeasibleConfigError
+
 
 def build_constraints(
     w: cp.Variable,
@@ -47,7 +49,7 @@ def build_constraints(
     lb = config.get("min_weight", 0.0)
     ub = config.get("max_weight", 1.0)
     if lb > ub:
-        raise ValueError("min_weight must be <= max_weight")
+        raise InfeasibleConfigError("min_weight must be <= max_weight")
     constraints.append(w >= lb)
     constraints.append(w <= ub)
 
@@ -56,7 +58,7 @@ def build_constraints(
     if w_prev is not None and "max_turnover" in config:
         mt = config["max_turnover"]
         if mt < 0:
-            raise ValueError("max_turnover must be >= 0")
+            raise InfeasibleConfigError("max_turnover must be >= 0")
         w_prev_flat = np.asarray(w_prev).ravel()
         constraints.append(cp.norm1(w - w_prev_flat) <= mt)
 
@@ -65,7 +67,7 @@ def build_constraints(
     if "min_return" in config:
         mu = config.get("mu")
         if mu is None:
-            raise ValueError("min_return set in config but mu not provided")
+            raise InfeasibleConfigError("min_return set in config but mu not provided")
         mu_flat = np.asarray(mu).ravel()
         constraints.append(mu_flat @ w >= config["min_return"])
 
