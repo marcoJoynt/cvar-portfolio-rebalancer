@@ -1,6 +1,6 @@
 """
 Tests for rebalancer.risk: CVaR/VaR computation and sanity checks.
-Uses real data pipeline (prices → returns → scenarios) then compute_cvar().
+Uses fake price data (no Yahoo Finance) then compute_cvar().
 """
 import numpy as np
 import pytest
@@ -10,12 +10,11 @@ from rebalancer.scenarios import historical_bootstrap
 
 
 @pytest.fixture(scope="module")
-def scenarios_and_weights():
-    """Build scenarios and two weight vectors once for all tests in this module."""
-    prices = get_prices()
-    returns = get_returns(prices)
+def scenarios_and_weights(fake_prices):
+    """Build scenarios and two weight vectors once (uses fake data, no API)."""
+    returns = get_returns(fake_prices)
     scenarios = historical_bootstrap(returns, n_scenarios=10_000)
-    n = len(prices.columns)
+    n = len(fake_prices.columns)
     w_equal = np.ones(n) / n
     w_concentrated = np.array([0.9, 0.025, 0.025, 0.025, 0.025])
     return scenarios, w_equal, w_concentrated
