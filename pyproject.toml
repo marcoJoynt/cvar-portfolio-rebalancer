@@ -14,7 +14,8 @@ dependencies = [
 ]
 
 [tool.pytest.ini_options]
-# Add project root to path so "rebalancer" can be imported when running pytest
 pythonpath = ["."]
-# Show print() output from tests
 addopts = "-s"
+markers = [
+    "integration: tests that hit the live Yahoo Finance API (run with RUN_INTEGRATION=1)",
+]
