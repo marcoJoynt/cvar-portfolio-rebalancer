@@ -8,39 +8,71 @@
 
 ## Optimization problem
 
-Decision variable: portfolio weights \( w \in \mathbb{R}^n \).
+Decision variable: portfolio weights $w \in \mathbb{R}^n$.
 
 **Objective (minimise):**
-\[
+
+$$
 \|w - w_{\text{target}}\|_2^2
-\;+\;
++
 \lambda_{\text{cost}} \cdot c \cdot \|w - w_{\text{prev}}\|_1
-\]
-- First term: tracking error (squared \(L_2\) deviation from target).
+$$
+
+- First term: tracking error (squared $L_2$ deviation from target).
 - Second term: transaction-cost penalty (L1 turnover × cost per unit).
 
 **Constraints:**
-\[
-\mathbf{1}^\top w = 1, \qquad
-w_{\min} \leq w \leq w_{\max}, \qquad
-\|w - w_{\text{prev}}\|_1 \leq \tau_{\max}, \qquad
-\text{CVaR}_\beta(w) \leq \gamma.
-\]
+
+Budget constraint
+
+$$
+\mathbf{1}^\top w = 1
+$$
+
+Box constraints
+
+$$
+w_{\min} \le w \le w_{\max}
+$$
+
+Turnover constraint
+
+$$
+\|w - w_{\text{prev}}\|_1 \le \tau_{\max}
+$$
+
+Risk constraint
+
+$$
+\text{CVaR}_\beta(w) \le \gamma
+$$
+
 - Budget: weights sum to 1.
 - Box: per-asset min/max (e.g. 5%–60%).
-- Turnover: L1 change vs current weights ≤ \(\tau_{\max}\).
-- Risk: CVaR at level \(\beta\) (e.g. 95%) ≤ \(\gamma\).
+- Turnover: L1 change vs current weights ≤ $\tau_{\max}$.
+- Risk: CVaR at level $\beta$ (e.g. 95%) ≤ $\gamma$.
 
-**CVaR (Rockafellar–Uryasev):** For scenario returns \(r_1,\ldots,r_q\) and loss \(L_k = -r_k^\top w\),
-\[
+**CVaR (Rockafellar–Uryasev):**
+
+For scenario returns $r_1,\ldots,r_q$ and loss
+
+$$
+L_k = -r_k^\top w
+$$
+
+```math
 \text{CVaR}_\beta(w)
-\;=\;
-\min_{z \in \mathbb{R}} \;
-\left\{\;
-z \;+\; \frac{1}{q(1-\beta)} \sum_{k=1}^{q} \max(L_k - z,\, 0)
-\;\right\}.
-\]
-Here \(z\) is the VaR threshold; the \(\max(\cdot,0)\) terms are implemented as `cp.pos()` in CVXPY, so the problem stays convex.
+=
+\min_{z \in \mathbb{R}}
+\left(
+z +
+\frac{1}{q(1-\beta)}
+\sum_{k=1}^{q}
+\max(L_k - z, 0)
+\right)
+```
+
+Here $z$ is the VaR threshold; the $\max(\cdot,0)$ terms are implemented as `cp.pos()` in CVXPY, so the problem stays convex.
 
 ---
 
@@ -75,22 +107,11 @@ cvar-portfolio-rebalancer/
 
 ---
 
-## Screenshot
-
-<!-- Replace the path below with your actual screenshot (e.g. docs/dashboard.png) -->
-![Streamlit dashboard](docs/dashboard.png)
-
-*Streamlit dashboard: sidebar inputs, rebalance button, metrics, allocation and risk charts, trade list.*
-
-*(Add a screenshot to `docs/dashboard.png` or update the path above.)*
-
----
-
 ## Theory
 
 - **CVaR (Conditional Value-at-Risk)** at e.g. 95% is the *average loss in the worst 5% of outcomes*. It’s a coherent risk measure and more stable than VaR for optimisation.
 
-- **Rockafellar–Uryasev (2000)** showed that CVaR can be written as a minimum over an auxiliary variable \(z\). That formulation is convex, so we can minimise other objectives (like tracking error) subject to a CVaR *constraint* — the solver handles both in one convex program.
+- **Rockafellar–Uryasev (2000)** showed that CVaR can be written as a minimum over an auxiliary variable $z$. That formulation is convex, so we can minimise other objectives (like tracking error) subject to a CVaR *constraint* — the solver handles both in one convex program.
 
 - **Here:** we minimise tracking error plus a turnover penalty, subject to a CVaR cap, budget, box, and turnover limit. Scenarios are bootstrap samples of historical returns; tax is approximated with German Abgeltungsteuer (flat rate + allowance).
 
