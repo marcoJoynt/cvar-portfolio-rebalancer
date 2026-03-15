@@ -2,6 +2,8 @@
 
 **What it does.** This project rebalances a multi-asset portfolio toward target weights while limiting downside risk (CVaR) and turnover. It uses convex optimisation (Rockafellar–Uryasev) and reports trade lists with estimated German capital-gains tax impact.
 
+**Live demo:** [app](https://cvar-portfolio-rebalancer-production.up.railway.app)
+
 ---
 
 ## Optimization problem
